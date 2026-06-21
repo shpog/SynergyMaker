@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dodaj Rolę - SynergyMaker</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <header></header>
+    <main>
+
+        <div class="card" style="max-width: 500px; margin: 0 auto;">
+            <h1>Nowa rola</h1>
+            <form id="add-role-form">
+                <div>
+                    <label>Nazwa Roli</label>
+                    <input type="text" id="role-name" required placeholder="np. Cloud Architect, Tester">
+                </div>
+                <button type="submit">Utwórz Rolę</button>
+            </form>
+            <div id="msg" style="margin-top:15px; font-weight:bold;"></div>
+        </div>
+
+    </main>
+    <script src="/js/main.js"></script>
+    <script>
+
+        document.getElementById('add-role-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('role-name').value;
+            const res = await fetchAPI('/api/roles', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            if (res.message) {
+                document.getElementById('msg').innerText = "Rola została utworzona pomyślnie.";
+                document.getElementById('role-name').value = '';
+            }
+        });
+
+    </script>
+</body>
+
+</html>

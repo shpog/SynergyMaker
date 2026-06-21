@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Wyszukiwanie Osób - SynergyMaker</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <header></header>
+    <main>
+
+        <div class="card">
+            <h1>Wyszukiwarka</h1>
+            <div>
+                <label>Filtruj według nazwy lub roli</label>
+                <input type="text" id="search-input" oninput="doSearch()" placeholder="Zacznij pisać imię lub rolę...">
+            </div>
+            <table id="search-table">
+                <thead>
+                    <tr>
+                        <th>Imię i nazwisko</th>
+                        <th>Rola</th>
+                        <th>Akcje</th>
+                    </tr>
+                </thead>
+                <tbody id="search-tbody"></tbody>
+            </table>
+        </div>
+
+    </main>
+    <script src="/js/main.js"></script>
+    <script>
+
+        let allPeople = [];
+        document.addEventListener('DOMContentLoaded', async () => {
+            allPeople = await fetchAPI('/api/people');
+            doSearch();
+        });
+
+        function doSearch() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const tbody = document.getElementById('search-tbody');
+            tbody.innerHTML = '';
+            const filtered = allPeople.filter(p => p.name.toLowerCase().includes(query) || p.role.toLowerCase().includes(query));
+            filtered.forEach(p => {
+                tbody.innerHTML += `<tr>
+                <td>${p.name}</td>
+                <td><span class="badge">${p.role}</span></td>
+                <td><button onclick="viewResults('${p.id}', '${p.name}')" style="width:auto; padding:4px 8px;">Szczegóły</button></td>
+            </tr>`;
+            });
+        }
+
+        function viewResults(id, name) {
+            localStorage.setItem('search_person_id', id);
+            localStorage.setItem('search_person_name', name);
+            window.location.href = '/search-results';
+        }
+
+    </script>
+</body>
+
+</html>

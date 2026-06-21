@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Wyniki Wyszukiwania - SynergyMaker</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <header></header>
+    <main>
+
+        <div class="card">
+            <h1 id="title-name">Profil Synergii</h1>
+            <p><a href="/search">Powrót</a></p>
+            <h2>Bezpośrednie powiązania projektowe</h2>
+            <div id="results-table-container"></div>
+        </div>
+
+    </main>
+    <script src="/js/main.js"></script>
+    <script>
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const id = localStorage.getItem('search_person_id');
+            const name = localStorage.getItem('search_person_name');
+            if (!id) { window.location.href = '/search'; return; }
+            document.getElementById('title-name').innerText = `Profil Synergii: ${name}`;
+
+            const rels = await fetchAPI(`/api/people/${id}/relations`);
+            const container = document.getElementById('results-table-container');
+            if (rels.length === 0) {
+                container.innerHTML = '<p>Brak historii współpracy dla tej osoby.</p>';
+                return;
+            }
+            let html = '<table><tr><th>Współpracownik</th><th>Rola</th><th>Sukcesy</th><th>Porażki</th><th>Wskaźnik synergii</th></tr>';
+            rels.forEach(r => {
+                html += `<tr>
+                <td><strong>${r.name}</strong></td>
+                <td><span class="badge">${r.role}</span></td>
+                <td style="color:green;">${r.successes}</td>
+                <td style="color:red;">${r.failures}</td>
+                <td><strong>${r.synergy}</strong></td>
+            </tr>`;
+            });
+            html += '</table>';
+            container.innerHTML = html;
+        });
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Kreator Zespołu - SynergyMaker</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <header></header>
+    <main>
+
+        <div class="card">
+            <h1>Kreator zespołu</h1>
+            <p>Wprowadź pożądany skład ról. System przeanalizuje bazę danych pod kątem maksymalizacji całkowitej
+                synergii zespołu.</p>
+
+            <div class="flex-container">
+                <div class="flex-child" style="max-width: 400px;">
+                    <h3>Dodaj żądane stanowiska do zespołu</h3>
+                    <div style="display:flex; gap:10px;">
+                        <select id="role-picker"></select>
+                        <button onclick="addRoleToTeam()" style="width:auto;">Dodaj</button>
+                    </div>
+                    <h4 style="margin-top:20px;">Wybrane role (skład zespołu):</h4>
+                    <ul id="selected-roles-list"></ul>
+
+                    <h3>Warunki opcjonalne</h3>
+                    <label>Wymuś obecność osób:</label>
+                    <select id="include-picker" multiple style="height:80px;"></select>
+                    <label style="margin-top:10px;">Wyklucz osoby z doboru:</label>
+                    <select id="exclude-picker" multiple style="height:80px;"></select>
+
+                    <button onclick="optimizeTeam()" style="margin-top:25px;">Wyszukaj
+                        zespół</button>
+                </div>
+
+                <div class="flex-child card" style="background:#DEDCE5;">
+                    <h2>Wyniki Optymalizacji</h2>
+                    <div id="opt-results">Skonfiguruj zespół i kliknij przycisk po lewej.</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+    <script src="/js/main.js"></script>
+    <script>
+
+        let teamRoles = [];
+        document.addEventListener('DOMContentLoaded', async () => {
+            const roles = await fetchAPI('/api/roles');
+            const rp = document.getElementById('role-picker');
+            roles.forEach(r => rp.innerHTML += `<option value="${r.name}">${r.name}</option>`);
+
+            const people = await fetchAPI('/api/people');
+            const ip = document.getElementById('include-picker');
+            const ep = document.getElementById('exclude-picker');
+            people.forEach(p => {
+                const opt = `<option value="${p.id}">${p.name} (${p.role})</option>`;
+                ip.innerHTML += opt;
+                ep.innerHTML += opt;
+            });
+        });
+
+        function addRoleToTeam() {
+            const r = document.getElementById('role-picker').value;
+            if (!r) return;
+            teamRoles.push(r);
+            renderRoles();
+        }
+
+        function removeRole(idx) {
+            teamRoles.splice(idx, 1);
+            renderRoles();
+        }
+
+        function renderRoles() {
+            const ul = document.getElementById('selected-roles-list');
+            ul.innerHTML = '';
+            teamRoles.forEach((r, i) => {
+                ul.innerHTML += `<li><strong>${r}</strong> <a href="#" onclick="removeRole(${i})" style="color:red; margin-left:10px;">Usuń</a></li>`;
+            });
+        }
+
+        async function optimizeTeam() {
+            if (teamRoles.length === 0) { alert("Wybierz przynajmniej jedną rolę!"); return; }
+            const incSel = Array.from(document.getElementById('include-picker').selectedOptions).map(o => o.value);
+            const excSel = Array.from(document.getElementById('exclude-picker').selectedOptions).map(o => o.value);
+
+            const outDiv = document.getElementById('opt-results');
+            outDiv.innerHTML = 'Trwa obliczanie optymalnego podgrafu synergii...';
+
+            const res = await fetchAPI('/api/team/optimize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ roles: teamRoles, includeIds: incSel, excludeIds: excSel })
+            });
+
+            if (res.error) {
+                outDiv.innerHTML = `<p style="color:red; font-weight:bold;">Błąd: ${res.error}</p>`;
+                return;
+            }
+
+            let html = `<h3 style="color: #059669;">Sukces! Całkowita synergia zespołu: ${res.totalSynergy}</h3>`;
+            html += '<table><tr><th>Osoba</th><th>Rola</th></tr>';
+            res.team.forEach(m => {
+                html += `<tr><td><strong>${m.name}</strong></td><td><span class="badge" style="background:#dbeafe; color:#1e40af;">${m.assignedRole}</span></td></tr>`;
+            });
+            html += '</table>';
+            outDiv.innerHTML = html;
+        }
+
+    </script>
+</body>
+
+</html>

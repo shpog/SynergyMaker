@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: routes/api.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: routes/api.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @fileoverview API routes for managing roles, people, relationships, and team optimization.
+ * Provides RESTful endpoints for the SynergyMaker system.
+ * @module routes/api
+ */
+
+const express = require('express');
+const router = express.Router();
+const { getSession } = require('../db');
+
+/**
+ * Get all available roles
+ * @route GET /api/roles
+ * @returns {Object[]} Array of role objects with properties {name, ...}
+ * @returns {500} Internal server error
+ * @example
+ * GET /api/roles
+ * Response: [{"name": "Developer"}, {"name": "Architect"}, ...]
+ */
+router.get('/roles', async (req, res) => {
+    const session = getSession();
+    try {
+        const result = await session.run('MATCH (r:Role) RETURN r ORDER BY r.name ASC');
+        res.json(result.records.map(rec => rec.get('r').properties));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    } finally {
+        await session.close();
+    }
+});
+
+router.post('/roles', async (req, res) => {
+    /**
+     * Add a new role to the system
+     * @route POST /api/roles
+     * @param {Object} req.body - Request body
+     * @param {string} req.body.name - Role name (required)
+     * @returns {201} Role created successfully
+     * @returns {400} Missing role name
+     * @returns {500} Internal server error
+     * @example
+     * POST /api/roles
+     * Body: {"name": "Scrum Master"}
+     */
+    if (!name) return res.status(400).json({ error: 'Nazwa roli jest wymagana' });
+    const session = getSession();
+    try {
+        await session.run('MERGE (r:Role {name: $name})', { name });
+        res.status(201).json({ message: 'Rola dodana' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    } finally {
+        await session.close();
+    }
+});
+
+router.get('/people', async (req, res) => {
+    /**
+     * Get all people with their assigned roles
+     * @route GET /api/people
+     * @returns {Object[]} Array of person objects {id, name, role}
+     * @returns {500} Internal server error
+     * @example
+     * GET /api/people
+     * Response: [
+     *   {"id": "p_123", "name": "Jan Kowalski", "role": "Developer"},
+     *   {"id": "p_124", "name": "Anna Nowak", "role": "Architect"}
+     * ]
+     */
+    try {
+        const result = await session.run(`
+            MATCH (p:Person)
+            OPTIONAL MATCH (p)-[:HAS_ROLE]->(r:Role)
+            RETURN p.id AS id, p.name AS name, r.name AS role
+            ORDER BY p.name ASC
+        `);
+        res.json(result.records.map(rec => ({
+            id: rec.get('id'),
+            name: rec.get('name'),
+            role: rec.get('role') || 'Brak ról'
+        })));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    } finally {
+        await session.close();
+    }
+});
+
+router.post('/people', async (req, res) => {
+    /**
+     * Add a new person to the system
+     * @route POST /api/people
+     * @param {Object} req.body - Request body
+     * @param {string} req.body.name - Person's full name (required)
+     * @param {string} req.body.role - Role name (required)
+     * @returns {201} Person created with {message, id}
+     * @returns {400} Missing required fields
+     * @returns {500} Internal server error
+     * @example
+     * POST /api/people
+     * Body: {"name": "Piotr Lewandowski", "role": "Developer"}
+     */
+    if (!name || !role) return res.status(400).json({ error: 'Wszystkie pola są wymagane' });
+    const session = getSession();
+    const id = 'p_' + Date.now();
+    try {
+        await session.run(`
+            CREATE (p:Person {id: $id, name: $name})
+            WITH p
+            MATCH (r:Role {name: $role})
+            CREATE (p)-[:HAS_ROLE]->(r)
+        `, { id, name, role });
+        res.status(201).json({ message: 'Osoba dodana', id });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    } finally {
+        await session.close();
+    }
+});
+
+router.post('/relations', async (req, res) => {
+    /**
+     * Create or update cooperation relationship between two people
+     * @route POST /api/relations
+     * @param {Object} req.body - Request body
+     * @param {string} req.body.person1Id - First person's ID (required)
+     * @param {string} req.body.person2Id - Second person's ID (required)
+     * @param {number} [req.body.successes=0] - Number of successful cooperations
+     * @param {number} [req.body.failures=0] - Number of failed cooperations
+     * @returns {Object} Updated relationship {message}
+     * @returns {400} Missing required IDs
+     * @returns {500} Internal server error
+     * @example
+     * POST /api/relations
+     * Body: {"person1Id": "p_1", "person2Id": "p_2", "successes": 15, "failures": 2}
+     */
+    if (!person1Id || !person2Id) return res.status(400).json({ error: 'ID są wymagane' });
+    const s = parseInt(successes) || 0;
+    const f = parseInt(failures) || 0;
+    const session = getSession();
+    try {
+        await session.run(`
+            MATCH (p1:Person {id: $person1Id})
+            MATCH (p2:Person {id: $person2Id})
+            MERGE (p1)-[r:COOPERATED]-(p2)
+            SET r.successes = $s, r.failures = $f
+        `, { person1Id, person2Id, s, f });
+        res.json({ message: 'Relacja zaktualizowana' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    } finally {
+        await session.close();
+    }
+});
+
+router.get('/people/:id/relations', async (req, res) => {
+    /**
+     * Get all cooperation relationships for a specific person
+     * @route GET /api/people/:id/relations
+     * @param {string} req.params.id - Person's ID
+     * @returns {Object[]} Array of relations {id, name, role, successes, failures, synergy}
+     * @returns {500} Internal server error
+     * @example
+     * GET /api/people/p_1/relations
+     * Response: [
+     *   {"id": "p_2", "name": "Anna", "role": "Developer", "successes": 15, "failures": 2, "synergy": 13}
+     * ]
+     */
+    try {
+        const result = await session.run(`
+            MATCH (p:Person {id: $id})-[r:COOPERATED]-(o:Person)
+            OPTIONAL MATCH (o)-[:HAS_ROLE]->(role:Role)
+            RETURN o.id AS id, o.name AS name, role.name AS role, r.successes AS successes, r.failures AS failures
+        `, { id: req.params.id });
+        res.json(result.records.map(rec => ({
+            id: rec.get('id'),
+            name: rec.get('name'),
+            role: rec.get('role') || 'Brak',
+            successes: rec.get('successes'),
+            failures: rec.get('failures'),
+            synergy: rec.get('successes') - rec.get('failures')
+        })));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    } finally {
+        await session.close();
+    }
+});
+
+router.get('/graph', async (req, res) => {
+    /**
+     * Get graph representation of all people and their relationships
+     * @route GET /api/graph
+     * @returns {Object} Graph data {nodes, links}
+     * @returns {Object[]} nodes - Array of person nodes {id, name, role}
+     * @returns {Object[]} links - Array of relationships {source, target, successes, failures}
+     * @returns {500} Internal server error
+     * @example
+     * GET /api/graph
+     * Response: {
+     *   "nodes": [{"id": "p_1", "name": "Jan", "role": "Developer"}],
+     *   "links": [{"source": "p_1", "target": "p_2", "successes": 10, "failures": 2}]
+     * }
+     */
+    try {
+        const nr = await session.run('MATCH (p:Person)-[:HAS_ROLE]->(r:Role) RETURN p.id AS id, p.name AS name, r.name AS role');
+        const er = await session.run('MATCH (p1:Person)-[r:COOPERATED]->(p2:Person) RETURN p1.id AS s, p2.id AS t, r.successes AS succ, r.failures AS fail');
+        res.json({
+            nodes: nr.records.map(rec => ({ id: rec.get('id'), name: rec.get('name'), role: rec.get('role') })),
+            links: er.records.map(rec => ({ source: rec.get('s'), target: rec.get('t'), successes: rec.get('succ'), failures: rec.get('fail') }))
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    } finally {
+        await session.close();
+    }
+});
+
+router.post('/team/optimize', async (req, res) => {
+    /**
+     * Optimize team composition based on roles, synergy metrics, and constraints
+     * Uses backtracking algorithm to find the best team with maximum synergy.
+     * Synergy is calculated as: successes - failures between team members.
+     * @route POST /api/team/optimize
+     * @param {Object} req.body - Request body
+     * @param {string[]} req.body.roles - Array of required roles (required)
+     * @param {string[]} [req.body.includeIds=[]] - Must-include person IDs
+     * @param {string[]} [req.body.excludeIds=[]] - Must-exclude person IDs
+     * @returns {Object} Optimized team {team, totalSynergy}
+     * @returns {Object[]} team - Array of persons {id, name, role, assignedRole}
+     * @returns {number} totalSynergy - Sum of all cooperation synergies
+     * @returns {400} No roles selected
+     * @returns {404} No team found matching criteria
+     * @returns {500} Internal server error
+     * @example
+     * POST /api/team/optimize
+     * Body: {
+     *   "roles": ["Developer", "Architect"],
+     *   "includeIds": ["p_1"],
+     *   "excludeIds": ["p_5"]
+     * }
+     */
+    roles = roles || []; includeIds = includeIds || []; excludeIds = excludeIds || [];
+    if (roles.length === 0) return res.status(400).json({ error: 'Wybierz role' });
+    const session = getSession();
+    try {
+        const candRes = await session.run('MATCH (p:Person)-[:HAS_ROLE]->(r:Role) WHERE NOT p.id IN $excludeIds AND r.name IN $roles RETURN p.id AS id, p.name AS name, r.name AS role', { excludeIds, roles });
+        const candidates = candRes.records.map(rec => ({ id: rec.get('id'), name: rec.get('name'), role: rec.get('role') }));
+        const edgeRes = await session.run('MATCH (p1:Person)-[r:COOPERATED]-(p2:Person) WHERE p1.id IN $ids AND p2.id IN $ids RETURN p1.id AS p1, p2.id AS p2, r.successes AS s, r.failures AS f', { ids: candidates.map(c => c.id) });
+
+        const edgeMap = {};
+        edgeRes.records.forEach(rec => {
+            const p1 = rec.get('p1'), p2 = rec.get('p2'), s = rec.get('s'), f = rec.get('f');
+            if (!edgeMap[p1]) edgeMap[p1] = {};
+            edgeMap[p1][p2] = s - f;
+        });
+
+        let bestTeam = null, maxSynergy = -Infinity;
+        function backtrack(idx, current) {
+            if (idx === roles.length) {
+                const sIds = current.map(c => c.id);
+                if (!includeIds.every(id => sIds.includes(id))) return;
+                let syn = 0;
+                for (let i = 0; i &lt; current.length; i++) {
+                    for (let j = i + 1; j &lt; current.length; j++) {
+                        if (edgeMap[current[i].id] &amp;&amp; edgeMap[current[i].id][current[j].id] !== undefined) {
+                            syn += edgeMap[current[i].id][current[j].id];
+                        }
+                    }
+                }
+                if (syn > maxSynergy) { maxSynergy = syn; bestTeam = current.map((c, i) => ({ ...c, assignedRole: roles[i] })); }
+                return;
+            }
+            candidates.filter(c => c.role === roles[idx]).forEach(cand => {
+                if (!current.some(s => s.id === cand.id)) backtrack(idx + 1, [...current, cand]);
+            });
+        }
+        backtrack(0, []);
+        if (!bestTeam) return res.status(404).json({ error: 'Nie znaleziono zespołu spełniającego kryteria' });
+        res.json({ team: bestTeam, totalSynergy: maxSynergy });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    } finally {
+        await session.close();
+    }
+});
+
+module.exports = router;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-app.html">app</a></li><li><a href="module-db.html">db</a></li><li><a href="module-routes_api.html">routes/api</a></li><li><a href="module-routes_testing.html">routes/testing</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Jun 21 2026 16:24:15 GMT+0200 (czas środkowoeuropejski letni)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

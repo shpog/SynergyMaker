@@ -1,0 +1,17 @@
+{
+    "name": "synergymaker",
+    "version": "1.0.0",
+    "description": "System Doboru Zespołu Projektowego na Podstawie Synergii",
+    "main": "src/app.js",
+    "scripts": {
+        "start": "node src/app.js",
+        "docs": "jsdoc -c jsdoc.json"
+    },
+    "dependencies": {
+        "express": "^4.19.2",
+        "neo4j-driver": "^5.20.0"
+    },
+    "devDependencies": {
+        "jsdoc": "^4.0.3"
+    }
+}

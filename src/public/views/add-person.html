@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dodaj Osobę - SynergyMaker</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <header></header>
+    <main>
+
+        <div class="card" style="max-width: 500px; margin: 0 auto;">
+            <h1>Nowa osoba</h1>
+            <form id="add-person-form">
+                <div>
+                    <label>Nazwa</label>
+                    <input type="text" id="name" required placeholder="np. Jan Kowalski">
+                </div>
+                <div>
+                    <label>Rola</label>
+                    <select id="role-select" required>
+                        <option value="">Pobieranie ról...</option>
+                    </select>
+                </div>
+                <button type="submit">Zapisz osobę</button>
+            </form>
+            <div id="msg" style="margin-top:15px; font-weight:bold;"></div>
+        </div>
+
+    </main>
+    <script src="/js/main.js"></script>
+    <script>
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const roles = await fetchAPI('/api/roles');
+            const select = document.getElementById('role-select');
+            select.innerHTML = '<option value="">-- Wybierz rolę --</option>';
+            roles.forEach(r => {
+                select.innerHTML += `<option value="${r.name}">${r.name}</option>`;
+            });
+        });
+
+        document.getElementById('add-person-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const role = document.getElementById('role-select').value;
+            const res = await fetchAPI('/api/people', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, role })
+            });
+            if (res.message) {
+                document.getElementById('msg').innerText = "Osoba dodana pomyślnie!";
+                document.getElementById('add-person-form').reset();
+            }
+        });
+
+    </script>
+</body>
+
+</html>

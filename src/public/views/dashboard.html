@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - SynergyMaker</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <header></header>
+    <main>
+
+        <div class="card">
+            <h1>Dashboard</h1>
+            <p>Witaj w systemie doboru optymalnych zespołów na podstawie synergii</p>
+            <button onclick="window.location.href='/add-person'" style="width: auto; padding: 10px 20px;">Dodaj
+                osobę</button>
+            <button onclick="window.location.href='/add-role'" style="width: auto; padding: 10px 20px;">Dodaj
+                rolę</button>
+            <button onclick="window.location.href='/manage-relations'"
+                style="width: auto; padding: 10px 20px;">Zarządzaj relacjami</button>
+            <button onclick="window.location.href='/team-creator'" style="width: auto; padding: 10px 20px;">Otwórz
+                kreator zespółów</button>
+            <button onclick="window.location.href='/search'" style="width: auto; padding: 10px 20px;">Wyszukaj
+                osobę</button>
+            <button onclick="window.location.href='/testing/add-sample-data'"
+                style="width: auto; padding: 10px 20px;">Załaduj 25 testowych osób</button>
+        </div>
+        <div class="flex-container">
+            <div class="card flex-child">
+                <h2>Osoby</h2>
+                <div id="people-list">Ładowanie...</div>
+            </div>
+            <div class="card flex-child">
+                <p id="click-hint" style="margin-top: 0;">Kliknij osobę z listy po lewej, aby zobaczyć szczegóły.</p>
+                <div id="relations-details" style="margin-top: 0;"></div>
+            </div>
+        </div>
+
+    </main>
+    <script src="/js/main.js"></script>
+    <script>
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const people = await fetchAPI('/api/people');
+            const listDiv = document.getElementById('people-list');
+            if (!people || people.length === 0) {
+                listDiv.innerHTML = '<p>Brak osób w bazie. Kliknij przycisk powyżej aby wygenerować dane demonstracyjne.</p>';
+                return;
+            }
+            let html = '<table><tr><th>Imię i nazwisko</th><th>Rola</th><th></th></tr>';
+            people.forEach(p => {
+                html += `<tr><td><strong>${p.name}</strong></td><td><span class="badge">${p.role}</span></td>
+            <td><button onclick="showRelations('${p.id}', '${p.name}')" style="font-size:12px; width:auto;">Szczegóły</button></td></tr>`;
+            });
+            html += '</table>';
+            listDiv.innerHTML = html;
+        });
+
+        async function showRelations(id, name) {
+            document.getElementById('click-hint').style.display = 'none';
+            const rels = await fetchAPI(`/api/people/${id}/relations`);
+            const detailsDiv = document.getElementById('relations-details');
+            let html = `<h3 style="margin-top: 0;">${name}</h3>`;
+            if (rels.length === 0) {
+                html += '<p>Ta osoba nie posiada jeszcze żadnej zarejestrowanej współpracy.</p>';
+            } else {
+                html += '<table><tr><th>Współpracownik</th><th>Rola</th><th>Sukcesy</th><th>Porażki</th><th>Wskaźnik synergii</th></tr>';
+                rels.forEach(r => {
+                    html += `<tr><td>${r.name}</td><td><span class="badge">${r.role}</span></td><td>${r.successes}</td><td>${r.failures}</td><td><strong>${r.synergy}</strong></td></tr>`;
+                });
+                html += '</table>';
+            }
+            detailsDiv.innerHTML = html;
+        }
+
+    </script>
+</body>
+
+</html>

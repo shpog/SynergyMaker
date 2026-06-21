@@ -1,0 +1,86 @@
+/**
+ * @fileoverview Testing routes for data loading and system initialization.
+ * Provides endpoints to populate the database with sample data.
+ * @module routes/testing
+ */
+
+const express = require('express');
+const router = express.Router();
+const { getSession } = require('../db');
+
+/**
+ * Load sample data into the database
+ * Creates 25 sample people in 5 different roles with predetermined cooperation relationships.
+ * Clears all existing data before loading.
+ * Sample roles: Architect, Developer, Tester, Project Manager, Designer
+ * @route GET /testing/add-sample-data
+ * @returns {void} HTML page confirming data loaded
+ * @returns {500} Error loading data
+ * @example
+ * GET /testing/add-sample-data
+ * Response: HTML page showing "Dane załadowane pomyślnie (25 osób, relacje)."
+ */
+router.get('/add-sample-data', async (req, res) => {
+    const session = getSession();
+    try {
+        await session.run('MATCH (n) DETACH DELETE n');
+        const roles = ["Architect", "Developer", "Tester", "Project Manager", "Designer"];
+        for (let r of roles) await session.run('CREATE (:Role {name: $r})', { r });
+
+        const people = [
+            { id: "p1", name: "Jan Kowalski", role: "Architect" },
+            { id: "p2", name: "Anna Nowak", role: "Developer" },
+            { id: "p3", name: "Piotr Wiśniewski", role: "Tester" },
+            { id: "p4", name: "Maria Wójcik", role: "Project Manager" },
+            { id: "p5", name: "Krzysztof Kamiński", role: "Designer" },
+            { id: "p6", name: "Agnieszka Zielińska", role: "Developer" },
+            { id: "p7", name: "Janusz Woźniak", role: "Tester" },
+            { id: "p8", name: "Elżbieta Szymańska", role: "Architect" },
+            { id: "p9", name: "Tomasz Lewandowski", role: "Developer" },
+            { id: "p10", name: "Barbara Dąbrowska", role: "Designer" },
+            { id: "p11", name: "Marcin Zieliński", role: "Project Manager" },
+            { id: "p12", name: "Ewa Woźniak", role: "Developer" },
+            { id: "p13", name: "Andrzej Kozłowski", role: "Tester" },
+            { id: "p14", name: "Zofia Jankowska", role: "Architect" },
+            { id: "p15", name: "Krystyna Mazur", role: "Designer" },
+            { id: "p16", name: "Jerzy Wojciechowski", role: "Developer" },
+            { id: "p17", name: "Małgorzata Kwiatkowska", role: "Tester" },
+            { id: "p18", name: "Janina Krawczyk", role: "Project Manager" },
+            { id: "p19", name: "Ryszard Kaczmarek", role: "Developer" },
+            { id: "p20", name: "Elżbieta Piotrowska", role: "Designer" },
+            { id: "p21", name: "Stefan Grabowski", role: "Architect" },
+            { id: "p22", name: "Krystyna Pawlak", role: "Developer" },
+            { id: "p23", name: "Stanisław Michalski", role: "Tester" },
+            { id: "p24", name: "Zofia Król", role: "Project Manager" },
+            { id: "p25", name: "Michał Zając", role: "Designer" }
+        ];
+
+        for (let p of people) {
+            await session.run('CREATE (person:Person {id: $id, name: $name}) WITH person MATCH (r:Role {name: $role}) CREATE (person)-[:HAS_ROLE]->(r)', p);
+        }
+
+        const rels = [
+            { p1: "p1", p2: "p2", s: 15, f: 2 }, { p1: "p1", p2: "p3", s: 10, f: 1 },
+            { p1: "p2", p2: "p3", s: 12, f: 4 }, { p1: "p4", p2: "p1", s: 8, f: 0 },
+            { p1: "p4", p2: "p2", s: 9, f: 3 }, { p1: "p5", p2: "p2", s: 7, f: 1 },
+            { p1: "p6", p2: "p7", s: 11, f: 5 }, { p1: "p8", p2: "p6", s: 14, f: 2 },
+            { p1: "p11", p2: "p9", s: 12, f: 1 }, { p1: "p12", p2: "p13", s: 16, f: 0 },
+            { p1: "p14", p2: "p12", s: 9, f: 2 }, { p1: "p14", p2: "p13", s: 11, f: 1 },
+            { p1: "p16", p2: "p17", s: 13, f: 2 }, { p1: "p18", p2: "p16", s: 10, f: 1 },
+            { p1: "p21", p2: "p19", s: 6, f: 0 }, { p1: "p21", p2: "p22", s: 15, f: 1 },
+            { p1: "p22", p2: "p23", s: 14, f: 2 }, { p1: "p24", p2: "p21", s: 10, f: 0 },
+            { p1: "p24", p2: "p22", s: 11, f: 3 }, { p1: "p24", p2: "p23", s: 9, f: 2 }
+        ];
+
+        for (let r of rels) {
+            await session.run('MATCH (a:Person {id: $p1}), (b:Person {id: $p2}) CREATE (a)-[:COOPERATED {successes: $s, failures: $f}]->(b)', r);
+        }
+        res.send("<h1>Dane załadowane pomyślnie (25 osób, relacje).</h1><p><a href='/'>Powrót do strony głównej</a></p>");
+    } catch (err) {
+        res.status(500).send(err.message);
+    } finally {
+        await session.close();
+    }
+});
+
+module.exports = router;

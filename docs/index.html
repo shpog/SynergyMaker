@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Home</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+    <div id="main">
+
+        <h1 class="page-title">Home</h1>
+
+
+
+
+
+
+
+
+        <h3> </h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <section>
+            <article>
+                <h1>SynergyMaker - System Doboru Zespołu Projektowego</h1>
+                <p>SynergyMaker to system umożliwiający inteligentny dobór zespołu projektowego na podstawie synergii
+                    między członkami zespołu. Aplikacja analizuje historię współpracy między ludźmi, oblicza wskaźniki
+                    synergii i automatycznie optymalizuje skład zespołu.</p>
+                <h2>Główne Funkcjonalności</h2>
+                <ul>
+                    <li><strong>Zarządzanie Rolami</strong> - Definiowanie dostępnych ról w organizacji</li>
+                    <li><strong>Zarządzanie Osobami</strong> - Dodawanie pracowników i przypisywanie im ról</li>
+                    <li><strong>Zarządzanie Relacjami</strong> - Śledzenie historii współpracy między ludźmi (sukcesy i
+                        porażki)</li>
+                    <li><strong>Optymalizacja Zespołu</strong> - Automatyczne wybranie najlepszego zespołu na podstawie
+                        wymaganych ról i maksymalnej synergii</li>
+                    <li><strong>Wizualizacja Sieci</strong> - Graficzna reprezentacja sieci relacji między pracownikami
+                    </li>
+                    <li><strong>Wyszukiwanie</strong> - Szybkie wyszukiwanie pracowników</li>
+                </ul>
+                <h2>Architektura</h2>
+                <h3>Stack Techniczny</h3>
+                <ul>
+                    <li><strong>Backend</strong>: Node.js + Express</li>
+                    <li><strong>Baza Danych</strong>: Neo4j (baza grafowa)</li>
+                    <li><strong>Frontend</strong>: HTML/CSS/JavaScript</li>
+                </ul>
+                <h3>Struktura Projektu</h3>
+                <pre class="prettyprint source"><code>src/
+├── app.js                 # Główna aplikacja Express
+├── db.js                 # Konfiguracja połączenia Neo4j
+├── routes/
+│   ├── api.js            # Endpoints API
+│   └── testing.js        # Endpoints do testowania
+└── public/
+    ├── views/            # Szablony HTML
+    ├── css/              # Arkusze stylów
+    └── js/
+        └── main.js       # Skrypty frontend
+</code></pre>
+                <h2>API Endpoints</h2>
+                <h3>Zarządzanie Rolami</h3>
+                <ul>
+                    <li><code>GET /api/roles</code> - Pobierz wszystkie role</li>
+                    <li><code>POST /api/roles</code> - Dodaj nową rolę</li>
+                </ul>
+                <h3>Zarządzanie Osobami</h3>
+                <ul>
+                    <li><code>GET /api/people</code> - Pobierz wszystkie osoby</li>
+                    <li><code>POST /api/people</code> - Dodaj nową osobę</li>
+                </ul>
+                <h3>Zarządzanie Relacjami</h3>
+                <ul>
+                    <li><code>POST /api/relations</code> - Dodaj/zaktualizuj relację</li>
+                    <li><code>GET /api/people/:id/relations</code> - Pobierz relacje osoby</li>
+                </ul>
+                <h3>Optymalizacja Zespołu</h3>
+                <ul>
+                    <li><code>POST /api/team/optimize</code> - Optymalizuj skład zespołu</li>
+                    <li><code>GET /api/graph</code> - Pobierz graf sieci</li>
+                </ul>
+                <h2>Instalacja i Uruchomienie</h2>
+                <h3>Wymagania</h3>
+                <ul>
+                    <li>Node.js (v14+)</li>
+                    <li>Neo4j (lokalnie lub zdalnie)</li>
+                </ul>
+                <h3>Uruchomienie poprzez docker</h3>
+                <pre class="prettyprint source lang-bash"><code>docker-compose up --build
+</code></pre>
+                <h3>Uruchomienie ręczne</h3>
+                <ol>
+                    <li>Zainstaluj zależności:</li>
+                </ol>
+                <pre class="prettyprint source lang-bash"><code>npm install
+</code></pre>
+                <ol start="2">
+                    <li>Ustaw zmienne środowiskowe:</li>
+                </ol>
+                <pre class="prettyprint source lang-bash"><code>export NEO4J_URI=bolt://localhost:7687
+export NEO4J_USER=neo4j
+export NEO4J_PASSWORD=password123
+export PORT=3000
+</code></pre>
+                <ol start="3">
+                    <li>Uruchom aplikację:</li>
+                </ol>
+                <pre class="prettyprint source lang-bash"><code>npm start
+</code></pre>
+                <h3>URL i Port</h3>
+                <p>Aplikacja będzie dostępna pod adresem: <a href="http://localhost:3000">http://localhost:3000</a></p>
+                <p>Dane przykładowe mozna wygenerować wchodząc do aplikacji i klikając przycisk "Załaduj 25 testowych
+                    osób" lub
+                    odwiedzając adres: <a
+                        href="http://localhost:3000/testing/add-sample-data">http://localhost:3000/testing/add-sample-data</a>
+                </p>
+
+                <h2>Generowanie Dokumentacji</h2>
+                <p>Dokumentacja API generowana jest automatycznie z komentarzy JSDoc:</p>
+                <pre class="prettyprint source lang-bash"><code>npm run docs
+</code></pre>
+                <p>Dokumentacja zostanie wygenerowana w katalogu <code>docs/</code> i będzie dostępna w pliku
+                    <code>index.html</code>.
+                </p>
+                <h2>Algorytm Optymalizacji</h2>
+                <p>System wykorzystuje algorytm backtrackingu do znalezienia optymalnego zestawu zespołu:</p>
+                <ol>
+                    <li>Filtruje kandydatów na podstawie wymaganych ról</li>
+                    <li>Oblicza synergię jako różnicę między sukcesami a porażkami w relacjach</li>
+                    <li>Znajduje kombinację osób maksymalizującą całkowitą synergię</li>
+                    <li>Respektuje vinchistoria współpracy</li>
+                </ol>
+                <h2>Metryka Synergii</h2>
+                <p>Synergią między dwoma pracownikami jest obliczana jako:</p>
+                <pre class="prettyprint source"><code>synergy = successes - failures
+</code></pre>
+                <p>Całkowita synergią zespołu to suma synergii wszystkich par członków.</p>
+
+                <h2>Zapytania Cypher w Aplikacji</h2>
+                <p>System wykorzystuje Neo4j jako bazę danych grafową. Poniżej znajduje się kompletny spis wszystkich zapytań Cypher używanych w aplikacji:</p>
+
+                <h3>Zarządzanie Rolami</h3>
+                <pre class="prettyprint source lang-cypher"><code>// Pobierz wszystkie role
+MATCH (r:Role) RETURN r ORDER BY r.name ASC
+
+// Dodaj lub zaktualizuj rolę
+MERGE (r:Role {name: $name})
+</code></pre>
+
+                <h3>Zarządzanie Osobami</h3>
+                <pre class="prettyprint source lang-cypher"><code>// Pobierz wszystkie osoby z ich rolami
+MATCH (p:Person)
+OPTIONAL MATCH (p)-[:HAS_ROLE]->(r:Role)
+RETURN p.id AS id, p.name AS name, r.name AS role
+ORDER BY p.name ASC
+
+// Dodaj nową osobę z rolą
+CREATE (p:Person {id: $id, name: $name})
+WITH p
+MATCH (r:Role {name: $role})
+CREATE (p)-[:HAS_ROLE]->(r)
+</code></pre>
+
+                <h3>Zarządzanie Relacjami Współpracy</h3>
+                <pre class="prettyprint source lang-cypher"><code>// Dodaj lub zaktualizuj relację współpracy
+MATCH (p1:Person {id: $person1Id})
+MATCH (p2:Person {id: $person2Id})
+MERGE (p1)-[r:COOPERATED]-(p2)
+SET r.successes = $s, r.failures = $f
+
+// Pobierz relacje danej osoby
+MATCH (p:Person {id: $id})-[r:COOPERATED]-(o:Person)
+OPTIONAL MATCH (o)-[:HAS_ROLE]->(role:Role)
+RETURN o.id AS id, o.name AS name, role.name AS role,
+       r.successes AS successes, r.failures AS failures
+</code></pre>
+
+                <h3>Wizualizacja Sieci Grafu</h3>
+                <pre class="prettyprint source lang-cypher"><code>// Pobierz wszystkie węzły (osoby) z ich rolami
+MATCH (p:Person)-[:HAS_ROLE]->(r:Role)
+RETURN p.id AS id, p.name AS name, r.name AS role
+
+// Pobierz wszystkie krawędzie (relacje współpracy)
+MATCH (p1:Person)-[r:COOPERATED]->(p2:Person)
+RETURN p1.id AS s, p2.id AS t, r.successes AS succ, r.failures AS fail
+</code></pre>
+
+                <h3>Optymalizacja Zespołu</h3>
+                <pre class="prettyprint source lang-cypher"><code>// Pobierz kandydatów na członków zespołu dla wymaganych ról
+MATCH (p:Person)-[:HAS_ROLE]->(r:Role)
+WHERE NOT p.id IN $excludeIds AND r.name IN $roles
+RETURN p.id AS id, p.name AS name, r.name AS role
+
+// Pobierz krawędzie współpracy między kandydatami
+MATCH (p1:Person)-[r:COOPERATED]-(p2:Person)
+WHERE p1.id IN $ids AND p2.id IN $ids
+RETURN p1.id AS p1, p2.id AS p2, r.successes AS s, r.failures AS f
+</code></pre>
+
+                <h3>Inicjalizacja Danych Testowych</h3>
+                <pre class="prettyprint source lang-cypher"><code>// Usuń wszystkie dane
+MATCH (n) DETACH DELETE n
+
+// Utwórz rolę
+CREATE (:Role {name: $r})
+
+// Utwórz osobę z rolą
+CREATE (person:Person {id: $id, name: $name})
+WITH person
+MATCH (r:Role {name: $role})
+CREATE (person)-[:HAS_ROLE]->(r)
+
+// Utwórz relację współpracy
+MATCH (a:Person {id: $p1}), (b:Person {id: $p2})
+CREATE (a)-[:COOPERATED {successes: $s, failures: $f}]->(b)
+</code></pre>
+
+                <h2>Architektura Systemu</h2>
+                <h3>Diagram Klas (Class Diagram)</h3>
+                <pre class="prettyprint source"><code>┌─────────────────────────────────────────────────────────────┐
+│                     SynergyMaker System                       │
+└─────────────────────────────────────────────────────────────┘
+
+┌──────────────────────┐         ┌──────────────────────┐
+│      Role Node       │         │    Person Node       │
+├──────────────────────┤         ├──────────────────────┤
+│ - name: String       │         │ - id: String         │
+│                      │         │ - name: String       │
+└──────────────────────┘         └──────────────────────┘
+           △                               △
+           │                               │
+           └───────────┬───────────────────┘
+                       │
+                  HAS_ROLE (edge)
+
+┌──────────────────────────────────────────┐
+│   COOPERATED (edge/relationship)         │
+├──────────────────────────────────────────┤
+│ - successes: Integer (default: 0)        │
+│ - failures: Integer (default: 0)         │
+│ - synergy: successes - failures          │
+└──────────────────────────────────────────┘
+            (connects Person to Person)
+</code></pre>
+
+                <h3>Diagram Modelu Danych (Entity-Relationship)</h3>
+                <pre class="prettyprint source"><code>                      HAS_ROLE
+            ┌──────────────────────────┐
+            │                          │
+        ┌───────────┐           ┌─────────────┐
+        │  Person   │           │    Role     │
+        ├───────────┤           ├─────────────┤
+        │ id (PK)   │           │ name (PK)   │
+        │ name      │           └─────────────┘
+        └───────────┘
+            │
+            │ COOPERATED (bidirectional)
+            │ {successes, failures}
+            │
+        ┌───────────┐
+        │  Person   │
+        │ (różny)   │
+        └───────────┘
+</code></pre>
+
+                <h3>Przepływ Danych w Aplikacji</h3>
+                <pre class="prettyprint source"><code>
+Frontend (HTML/CSS/JS)
+        │
+        ├─ Formularz dla ról
+        ├─ Formularz dla osób
+        ├─ Formularz dla relacji
+        ├─ Wizualizacja sieci (D3.js)
+        └─ Panel optymalizacji zespołu
+
+        │ (HTTP Requests)
+        ▼
+Backend (Express.js)
+        │
+        ├─ GET/POST /api/roles
+        ├─ GET/POST /api/people
+        ├─ POST /api/relations
+        ├─ GET /api/people/:id/relations
+        ├─ GET /api/graph
+        └─ POST /api/team/optimize
+
+        │ (Cypher Queries)
+        ▼
+Database (Neo4j)
+        │
+        ├─ Role Nodes
+        ├─ Person Nodes
+        ├─ HAS_ROLE Edges
+        └─ COOPERATED Edges
+</code></pre>
+
+                <h3>Komponenty Systemu</h3>
+                <ul>
+                    <li><strong>Frontend (Public)</strong>
+                        <ul>
+                            <li>views/ - Szablony HTML dla interfejsu użytkownika</li>
+                            <li>css/ - Style CSS dla aplikacji</li>
+                            <li>js/main.js - Logika frontendowa i komunikacja z API</li>
+                        </ul>
+                    </li>
+                    <li><strong>Backend (Express.js)</strong>
+                        <ul>
+                            <li>app.js - Główna konfiguracja aplikacji Express</li>
+                            <li>routes/api.js - Implementacja API endpoints</li>
+                            <li>routes/testing.js - Endpoints dla testowania (dodawanie przykładowych danych)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Baza Danych (Neo4j)</strong>
+                        <ul>
+                            <li>db.js - Zarządzanie połączeniem z Neo4j</li>
+                            <li>Węzły: Role, Person</li>
+                            <li>Relacje: HAS_ROLE, COOPERATED</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h3>Algorytm Optymalizacji Zespołu</h3>
+                <p>System wykorzystuje <strong>algorytm backtrackingu</strong> do znalezienia optymalnego zestawu zespołu:</p>
+                <ol>
+                    <li>Pobiera kandydatów o wymaganych rolach z bazy danych (Cypher)</li>
+                    <li>Buduje mapę synergii między kandydatami na podstawie COOPERATED edges</li>
+                    <li>Dla każdej roli generuje wszystkie możliwe kombinacje kandydatów</li>
+                    <li>Dla każdej kombinacji oblicza sumę synergii między wszystkimi parami</li>
+                    <li>Weryfikuje, czy zespół zawiera wszystkie osoby z listy includeIds</li>
+                    <li>Zwraca zespół z najwyższą synergią</li>
+                </ol>
+                <p><strong>Złożoność:</strong> O(n!) w najgorszym przypadku, gdzie n to liczba kandydatów</p>
+
+                <h3>Bezpieczeństwo i Best Practices</h3>
+                <ul>
+                    <li>Wszystkie zapytania Cypher używają parametryzowanych zmiennych ($param) aby zapobiec wstrzykiwaniu</li>
+                    <li>Połączenie z Neo4j jest zabezpieczone authentication (user/password)</li>
+                    <li>Sesje Neo4j są prawidłowo zamykane w blokach finally</li>
+                    <li>Brak bezpośredniego dostępu do bazy danych - wszystko przez API</li>
+                </ul>
+
+                <h3>Technologie i Zależności</h3>
+                <ul>
+                    <li><strong>Node.js</strong> - Runtime JavaScript dla backendu</li>
+                    <li><strong>Express.js</strong> - Framework webowy</li>
+                    <li><strong>neo4j-driver</strong> - Oficjalny driver Neo4j dla Node.js</li>
+                    <li><strong>D3.js</strong> (frontend) - Wizualizacja sieci grafowej</li>
+                    <li><strong>Docker</strong> - Konteneryzacja aplikacji</li>
+                    <li><strong>JSDoc</strong> - Generowanie dokumentacji API</li>
+                </ul>
+            </article>
+        </section>
+
+
+
+
+
+
+    </div>
+
+    <nav>
+        <h2><a href="index.html">Home</a></h2>
+        <h3>Modules</h3>
+        <ul>
+            <li><a href="module-app.html">app</a></li>
+            <li><a href="module-db.html">db</a></li>
+            <li><a href="module-routes_api.html">routes/api</a></li>
+            <li><a href="module-routes_testing.html">routes/testing</a></li>
+        </ul>
+    </nav>
+
+    <br class="clear">
+
+    <footer>
+        Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Jun 21 2026 16:24:15
+        GMT+0200 (czas środkowoeuropejski letni)
+    </footer>
+
+    <script> prettyPrint(); </script>
+    <script src="scripts/linenumber.js"> </script>
+</body>
+
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Zarządzaj Relacjami - SynergyMaker</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <header></header>
+    <main>
+
+        <div class="card" style="max-width: 600px; margin: 0 auto;">
+            <h1>Zarządzanie relacjami</h1>
+            <p>Wprowadź dane dotyczące wspólnych sukcesów i porażek. Ta operacja bezpośrednio modyfikuje dane w bazie
+                danych.</p>
+            <form id="relation-form">
+                <div>
+                    <label>Osoba A</label>
+                    <select id="p1" required>
+                        <option value="">Ładowanie...</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Osoba B</label>
+                    <select id="p2" required>
+                        <option value="">Ładowanie...</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Liczba wspólnych sukcesów</label>
+                    <input type="number" id="succ" min="0" value="0" required>
+                </div>
+                <div>
+                    <label>Liczba wspólnych porażek</label>
+                    <input type="number" id="fail" min="0" value="0" required>
+                </div>
+                <button type="submit">Zapisz</button>
+            </form>
+            <div id="msg" style="margin-top:15px; font-weight:bold;"></div>
+        </div>
+
+    </main>
+    <script src="/js/main.js"></script>
+    <script>
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const people = await fetchAPI('/api/people');
+            const s1 = document.getElementById('p1');
+            const s2 = document.getElementById('p2');
+            s1.innerHTML = s2.innerHTML = '<option value="">-- Wybierz osobę --</option>';
+            people.forEach(p => {
+                const opt = `<option value="${p.id}">${p.name} (${p.role})</option>`;
+                s1.innerHTML += opt;
+                s2.innerHTML += opt;
+            });
+        });
+
+        document.getElementById('relation-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const p1 = document.getElementById('p1').value;
+            const p2 = document.getElementById('p2').value;
+            const successes = document.getElementById('succ').value;
+            const failures = document.getElementById('fail').value;
+            if (p1 === p2) {
+                alert("Wybierz dwie różne osoby!"); return;
+            }
+            const res = await fetchAPI('/api/relations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ person1Id: p1, person2Id: p2, successes, failures })
+            });
+            if (res.message) {
+                document.getElementById('msg').innerText = "Relacja została pomyślnie zapisana.";
+            }
+        });
+
+    </script>
+</body>
+
+</html>
