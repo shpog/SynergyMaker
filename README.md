@@ -347,6 +347,5 @@ System wykorzystuje **algorytm backtrackingu** do znalezienia optymalnego zestaw
 - **Node.js** - Runtime JavaScript dla backendu
 - **Express.js** - Framework webowy
 - **neo4j-driver** - Oficjalny driver Neo4j dla Node.js
-- **D3.js** (frontend) - Wizualizacja sieci grafowej
 - **Docker** - Konteneryzacja aplikacji
 - **JSDoc** - Generowanie dokumentacji API
